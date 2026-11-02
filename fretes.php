@@ -1,5 +1,13 @@
 <?php
 
+session_start();
+
+if (empty($_SESSION["csrf_token"])) {
+
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+
+}
+
 require_once __DIR__ . "/config/conexao.php";
 
 try {
@@ -73,9 +81,44 @@ try {
 
     <h1>Cadastro de Fretes</h1>
 
+    <?php if (($_GET["cadastrado"] ?? "") === "1"): ?>
+
+    <div class="alert alert-success">
+        Frete cadastrado com sucesso!
+    </div>
+
+<?php endif; ?>
+
+
+<?php if (!empty($_SESSION["erro_frete"])): ?>
+
+    <div class="alert alert-danger">
+
+        <?= htmlspecialchars(
+            $_SESSION["erro_frete"],
+            ENT_QUOTES,
+            "UTF-8"
+        ) ?>
+
+    </div>
+
+    <?php unset($_SESSION["erro_frete"]); ?>
+
+<?php endif; ?>
+
     <p>Preencha as informações para registrar um novo frete.</p>
 
-    <form method="POST" class="row g-3">
+   <form
+    method="POST"
+    action="salvar_frete.php"
+    class="row g-3"
+>
+
+ <input
+        type="hidden"
+        name="csrf_token"
+        value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>"
+    >
 
         <!-- TRANSPORTADORA -->
 
@@ -320,7 +363,6 @@ try {
             <button
                 type="submit"
                 class="btn btn-success"
-                disabled
             >
                 Salvar Frete
             </button>
