@@ -155,6 +155,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <body class="bg-light">
 
+<?php require __DIR__ . "/includes/menu.php"; ?>
+
     <main class="container mt-5">
 
         <h1>Editar Transportadora</h1>

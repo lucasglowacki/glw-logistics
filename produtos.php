@@ -102,6 +102,8 @@ $tipoAlerta = "danger";
 
 <body class="bg-light">
 
+<?php require __DIR__ . "/includes/menu.php"; ?>
+
 <main class="container mt-5">
     
 <h1>Cadastro de Produtos</h1>

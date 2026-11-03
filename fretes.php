@@ -44,6 +44,50 @@ try {
 
     $produtos = $consultaProdutos->fetchAll(PDO::FETCH_ASSOC);
 
+    // Buscar os fretes cadastrados
+
+$sqlFretes = "
+    SELECT
+        f.id,
+        f.data_frete,
+        t.nome AS transportadora,
+        eo.identificacao AS origem,
+        ed.identificacao AS destino,
+
+        (
+            SELECT GROUP_CONCAT(
+                CONCAT(p.nome, ' (', fp.quantidade, ' un.)')
+                ORDER BY p.nome
+                SEPARATOR ', '
+            )
+
+            FROM frete_produtos fp
+
+            INNER JOIN produtos p
+                ON p.id = fp.produto_id
+
+            WHERE fp.frete_id = f.id
+
+        ) AS itens
+
+    FROM fretes f
+
+    INNER JOIN transportadoras t
+        ON t.id = f.transportadora_id
+
+    INNER JOIN enderecos eo
+        ON eo.id = f.origem_id
+
+    INNER JOIN enderecos ed
+        ON ed.id = f.destino_id
+
+    ORDER BY f.id DESC
+";
+
+$consultaFretes = $pdo->query($sqlFretes);
+
+$fretes = $consultaFretes->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $erro) {
 
     error_log($erro->getMessage());
@@ -76,6 +120,8 @@ try {
 </head>
 
 <body class="bg-light">
+
+    <?php require __DIR__ . "/includes/menu.php"; ?>
 
 <main class="container mt-5">
 
@@ -377,6 +423,65 @@ try {
         </div>
 
     </form>
+
+    <hr class="my-5">
+
+<h2>Fretes Cadastrados</h2>
+
+<div class="table-responsive">
+
+    <table class="table table-striped table-hover">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>Transportadora</th>
+                <th>Origem</th>
+                <th>Destino</th>
+                <th>Produtos</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <?php foreach ($fretes as $frete): ?>
+
+                <tr>
+
+                    <td>
+                        <?= (int) $frete["id"] ?>
+                    </td>
+
+                    <td>
+                        <?= date("d/m/Y", strtotime($frete["data_frete"])) ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($frete["transportadora"], ENT_QUOTES, "UTF-8") ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($frete["origem"], ENT_QUOTES, "UTF-8") ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($frete["destino"], ENT_QUOTES, "UTF-8") ?>
+                    </td>
+
+                    <td>
+                        <?= htmlspecialchars($frete["itens"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                    </td>
+
+                </tr>
+
+            <?php endforeach; ?>
+
+        </tbody>
+
+    </table>
+
+</div>
 
 </main>
 
