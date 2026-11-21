@@ -1,5 +1,11 @@
 <?php
 
+session_start();
+
+if (empty($_SESSION["csrf_token"])) {
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+}
+
 require_once __DIR__ . "/config/conexao.php";
 
 $mensagem = "";
@@ -148,6 +154,18 @@ try {
 
 <?php endif; ?>
 
+<?php if (($_GET["excluido"] ?? "") === "1"): ?>
+    <div class="alert alert-success">Endereço excluído com sucesso!</div>
+<?php endif; ?>
+
+<?php if (($_GET["vinculado"] ?? "") === "1"): ?>
+    <div class="alert alert-warning">Este endereço está vinculado a um frete e não pode ser excluído.</div>
+<?php endif; ?>
+
+<?php if (($_GET["erro"] ?? "") === "1"): ?>
+    <div class="alert alert-danger">Não foi possível excluir o endereço.</div>
+<?php endif; ?>
+
 <p>Preencha as informações do endereço.</p>
 
 <?php if ($mensagem !== ""): ?>
@@ -291,9 +309,11 @@ try {
     >
         Editar
     </a>
-                                <a href="excluir_endereco.php?id=<?= $endereco["id"] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este endereço?')">
-                                    Excluir
-                                </a>
+                                <form method="POST" action="excluir_endereco.php" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este endereço?');">
+                                    <input type="hidden" name="id" value="<?= (int) $endereco['id'] ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                </form>
                             </td>
 
                         </tr>
